@@ -45,7 +45,7 @@ Um dos maiores desafios foi processar e visualizar um volume de **2.93 GB** de d
 
 1. **Clone o repositório:**
    ```bash
-   git clone [https://github.com/SEU_USUARIO/nyc-taxi-pipeline.git](https://github.com/SEU_USUARIO/nyc-taxi-pipeline.git)
+   git clone [https://github.com/felipeziviani/nyc-taxi-pipeline.git](https://github.com/felipeziviani/nyc-taxi-pipeline.git)
 
 2. **Configure suas credenciais**
 Crie um arquivo .env na raiz do projeto e adicione suas chaves do Google Cloud (certifique-se de colocar sua chave JSON na pasta /keys):
