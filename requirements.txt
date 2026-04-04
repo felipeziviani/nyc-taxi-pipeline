@@ -1,0 +1,9 @@
+streamlit
+pandas
+plotly
+pyarrow
+fastparquet
+pandas-gbq
+google-cloud-bigquery
+kagglehub
+db-dtypes

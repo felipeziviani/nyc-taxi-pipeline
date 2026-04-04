@@ -1,0 +1,16 @@
+# Chaves e Credenciais
+*.json
+.env
+keys/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+
+# Dados locais 
+data/raw/
+data/processed/
+
+# Docker logs
+*.log
