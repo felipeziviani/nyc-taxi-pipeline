@@ -66,3 +66,15 @@ Este projeto foi desenvolvido com o apoio e materiais da comunidade **Dados Por 
 
 * **LinkedIn da comunidade:** [Dados por Todos](linkedin.com/company/dadosportodos/)
 * **Documentação no Notion:** [Desafio Técnico 02 - Dados Por Todos](https://dadosportodos.notion.site/02-desafio-tecnico?p=331d9128b44981e19aaedb4537b90fc8&pm=s)
+
+## 🚀 Novidades desta Versão
+- **Modelagem Preditiva:** Adicionada aba de IA utilizando **XGBoost** para previsão de demanda.
+- **Dockerização:** Agora o projeto é 100% containerizado para facilitar o deploy.
+- **BigQuery Integration:** Otimização das queries para lidar com volumes de dados históricos.
+
+## 🐳 Como rodar com Docker
+1. Certifique-se de ter o arquivo `google_credentials.json` na raiz.
+2. Construa a imagem:
+   `docker build -t taxi-dashboard .`
+3. Rode o container:
+   `docker run -p 8501:8501 --env-file .env -v $(pwd)/google_credentials.json:/app/google_credentials.json taxi-dashboard`

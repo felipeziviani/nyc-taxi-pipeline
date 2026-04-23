@@ -1,5 +1,8 @@
 .venv
 __pycache__
-data/raw
-*.csv
 .git
+.env
+data/
+google_credentials.json
+.env
+models/*.joblib
