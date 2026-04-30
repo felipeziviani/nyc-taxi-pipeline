@@ -7,9 +7,13 @@ import plotly.express as px
 import joblib
 from google.oauth2 import service_account
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-)
+try:
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"]
+    )
+except Exception as e:
+    st.error("Erro nas credenciais do GCP. Verifique o secrets.toml")
+    st.stop()
 
 st.set_page_config(page_title="NYC Taxi Dashboard", layout="wide")
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,14 +30,14 @@ model = load_model()
 
 @st.cache_data
 def load_data():
-    project_id = st.secrets.get(
-        'GOOGLE_CLOUD_PROJECT', 'heroic-bucksaw-492321-m3')
-    dataset_id = st.secrets.get('DATASET_ID', 'nyc_taxi_data')
-    table_name = st.secrets.get('TABLE_ID', 'yellow_cab_trips')
+    project_id = st.secrets["GOOGLE_CLOUD_PROJECT"]
+    dataset_id = st.secrets["DATASET_ID"]
+    table_name = st.secrets["TABLE_ID"]
 
     query = f"""
-        SELECT * FROM `{project_id}.{dataset_id}.{table_name}` 
-        LIMIT 500000
+        SELECT *
+        FROM `{project_id}.{dataset_id}.{table_name}`
+        LIMIT 300000
     """
 
     try:
@@ -42,11 +46,11 @@ def load_data():
             project_id=project_id,
             credentials=credentials,
             dialect='standard',
-            location='US'
+            location='US',
+            progress_bar_type=None
         )
 
         df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
-
         df["hour"] = df["tpep_pickup_datetime"].dt.hour
 
         def get_period(hour):
@@ -61,14 +65,17 @@ def load_data():
 
         df["period"] = df["hour"].apply(get_period)
 
-        pay_map = {1: "Cartão", 2: "Dinheiro", 3: "Isento",
-                   4: "Disputa", 5: "Desconhecido", 6: "Cancelado"}
+        pay_map = {
+            1: "Cartão", 2: "Dinheiro", 3: "Isento",
+            4: "Disputa", 5: "Desconhecido", 6: "Cancelado"
+        }
         df["payment_label"] = df["payment_type"].map(pay_map).fillna("Outros")
 
         vendor_map = {1: "Creative Mobile", 2: "Verifone"}
         df["empresa_tech"] = df["VendorID"].map(vendor_map).fillna("Outros")
 
         return df
+
     except Exception as e:
         st.error(f"Erro ao carregar dados do BigQuery: {e}")
         return pd.DataFrame()
