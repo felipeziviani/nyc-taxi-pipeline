@@ -5,6 +5,11 @@ import pandas_gbq
 import os
 import plotly.express as px
 import joblib
+from google.oauth2 import service_account
+
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
 
 st.set_page_config(page_title="NYC Taxi Dashboard", layout="wide")
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,11 +26,10 @@ model = load_model()
 
 @st.cache_data
 def load_data():
-    project_id = os.getenv('GOOGLE_CLOUD_PROJECT', 'heroic-bucksaw-492321-m3')
-    dataset_id = os.getenv('DATASET_ID', 'nyc_taxi_data')
-    table_name = os.getenv('TABLE_ID', 'yellow_cab_trips')
-
-    dataset_table = f"{dataset_id}.{table_name}"
+    project_id = st.secrets.get(
+        'GOOGLE_CLOUD_PROJECT', 'heroic-bucksaw-492321-m3')
+    dataset_id = st.secrets.get('DATASET_ID', 'nyc_taxi_data')
+    table_name = st.secrets.get('TABLE_ID', 'yellow_cab_trips')
 
     query = f"""
         SELECT * FROM `{project_id}.{dataset_id}.{table_name}` 
@@ -36,11 +40,27 @@ def load_data():
         df = pandas_gbq.read_gbq(
             query,
             project_id=project_id,
+            credentials=credentials,
             dialect='standard',
             location='US'
         )
 
         df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
+
+        df["hour"] = df["tpep_pickup_datetime"].dt.hour
+
+        def get_period(hour):
+            if 5 <= hour < 12:
+                return "Manhã"
+            elif 12 <= hour < 18:
+                return "Tarde"
+            elif 18 <= hour < 24:
+                return "Noite"
+            else:
+                return "Madrugada"
+
+        df["period"] = df["hour"].apply(get_period)
+
         pay_map = {1: "Cartão", 2: "Dinheiro", 3: "Isento",
                    4: "Disputa", 5: "Desconhecido", 6: "Cancelado"}
         df["payment_label"] = df["payment_type"].map(pay_map).fillna("Outros")
@@ -55,6 +75,8 @@ def load_data():
 
 
 df_raw = load_data()
+if df_raw.empty:
+    st.stop()
 st.sidebar.header("Filtros")
 anos = sorted(df_raw['tpep_pickup_datetime'].dt.year.unique())
 anos_sel = st.sidebar.multiselect("Ano", anos, default=anos)
@@ -186,7 +208,7 @@ with tab_ia:
 
     with c3:
         z_input = st.number_input(
-            "Código da Região (Geo-Hash)", value=-7398) 
+            "Código da Região (Geo-Hash)", value=-7398)
         st.caption("Nota: Este código representa uma região de aprox. 1km².")
 
     if st.button("Calcular Demanda Estimada"):
