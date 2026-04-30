@@ -2,6 +2,7 @@
 *.json
 .env
 keys/
+/.streamlit/
 
 # Python
 __pycache__/
